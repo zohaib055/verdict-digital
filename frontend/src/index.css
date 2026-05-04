@@ -1,0 +1,150 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 215 50% 8%;
+    --foreground: 210 20% 90%;
+
+    --card: 215 35% 12%;
+    --card-foreground: 210 20% 90%;
+
+    --popover: 215 35% 12%;
+    --popover-foreground: 210 20% 90%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 215 30% 18%;
+    --secondary-foreground: 210 15% 70%;
+
+    --muted: 215 30% 15%;
+    --muted-foreground: 215 15% 55%;
+
+    --accent: 215 30% 20%;
+    --accent-foreground: 210 20% 90%;
+
+    --destructive: 0 65% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 215 30% 22%;
+    --input: 215 30% 22%;
+    --ring: 217 91% 60%;
+
+    --radius: 0.5rem;
+
+    /* Custom tokens */
+    --yes: 152 55% 42%;
+    --yes-foreground: 0 0% 100%;
+    --no: 0 60% 55%;
+    --no-foreground: 0 0% 100%;
+    --yes-muted: 152 40% 15%;
+    --no-muted: 0 40% 15%;
+
+    --surface-1: 215 35% 12%;
+    --surface-2: 215 30% 10%;
+    --surface-3: 215 30% 15%;
+
+    --text-primary: 210 20% 90%;
+    --text-secondary: 215 15% 55%;
+    --text-tertiary: 215 10% 45%;
+
+    --chart-line: 217 91% 60%;
+
+    --sidebar-background: 215 35% 10%;
+    --sidebar-foreground: 215 15% 55%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 30% 18%;
+    --sidebar-accent-foreground: 210 20% 90%;
+    --sidebar-border: 215 30% 20%;
+    --sidebar-ring: 217 91% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  /* Tabular numbers for prices */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer utilities {
+  .text-yes {
+    color: hsl(var(--yes));
+  }
+  .text-no {
+    color: hsl(var(--no));
+  }
+  .bg-yes {
+    background-color: hsl(var(--yes));
+  }
+  .bg-no {
+    background-color: hsl(var(--no));
+  }
+  .bg-yes-muted {
+    background-color: hsl(var(--yes-muted));
+  }
+  .bg-no-muted {
+    background-color: hsl(var(--no-muted));
+  }
+  .bg-surface-1 {
+    background-color: hsl(var(--surface-1));
+  }
+  .bg-surface-2 {
+    background-color: hsl(var(--surface-2));
+  }
+  .bg-surface-3 {
+    background-color: hsl(var(--surface-3));
+  }
+  .text-secondary-custom {
+    color: hsl(var(--text-secondary));
+  }
+  .text-tertiary {
+    color: hsl(var(--text-tertiary));
+  }
+  .border-subtle {
+    border-color: hsl(var(--border));
+  }
+
+  /* Price flash animation */
+  @keyframes price-flash-up {
+    0% { background-color: hsl(var(--yes-muted)); }
+    100% { background-color: transparent; }
+  }
+  @keyframes price-flash-down {
+    0% { background-color: hsl(var(--no-muted)); }
+    100% { background-color: transparent; }
+  }
+  .flash-up {
+    animation: price-flash-up 1s ease-out;
+  }
+  .flash-down {
+    animation: price-flash-down 1s ease-out;
+  }
+
+  /* Scrollbar styling */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 2px;
+  }
+}
