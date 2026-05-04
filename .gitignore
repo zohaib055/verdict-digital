@@ -6,6 +6,9 @@ frontend/.env
 frontend/.env.*
 !frontend/.env.example
 
+# Local project notes
+/project.txt
+
 # Python
 .venv/
 venv/
@@ -37,6 +40,7 @@ frontend/vite.config.js
 frontend/vite.config.d.ts
 
 # Package-manager caches
+.tmp/
 .tmp/npm-cache/
 npm-debug.log*
 yarn-debug.log*
