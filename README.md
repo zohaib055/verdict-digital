@@ -104,6 +104,16 @@ npm test -- --passWithNoTests
 
 If port `5173` is busy, Vite will choose the next available port.
 
+## Ubuntu Deployment
+
+Systemd and Nginx deployment templates are in `deploy/`.
+
+- Backend service template: `deploy/verdict-backend.service`
+- Optional Nginx reverse proxy: `deploy/nginx-verdict-backend.conf`
+- Step-by-step server guide: `deploy/README-ubuntu.md`
+
+The production service is configured to run the backend on port `8001`.
+
 ## Notes
 
 - Root `.env` and `project.txt` are intentionally ignored.
