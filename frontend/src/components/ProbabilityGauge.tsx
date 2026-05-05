@@ -5,6 +5,10 @@ interface ProbabilityGaugeProps {
 
 export default function ProbabilityGauge({ percentage, size = 'sm' }: ProbabilityGaugeProps) {
   const isLarge = size === 'lg';
+  const safePercentage = Number.isFinite(percentage) ? Math.min(100, Math.max(0, percentage)) : 0;
+  const displayPercentage = new Intl.NumberFormat('en-US', {
+    maximumFractionDigits: isLarge ? 1 : 0,
+  }).format(safePercentage);
   const r = 29;
   const stroke = 4.5;
 
@@ -27,19 +31,19 @@ export default function ProbabilityGauge({ percentage, size = 'sm' }: Probabilit
   const ey = r * Math.sin(toRad(endAngle));
 
   // Filled arc endpoint based on percentage
-  const filledAngle = startAngle + (totalArc * percentage) / 100;
+  const filledAngle = startAngle + (totalArc * safePercentage) / 100;
   const fx = r * Math.cos(toRad(filledAngle));
   const fy = r * Math.sin(toRad(filledAngle));
 
   // Background arc: from filled endpoint to end
-  const bgAngle = totalArc * (1 - percentage / 100);
+  const bgAngle = totalArc * (1 - safePercentage / 100);
   const bgLargeArc = bgAngle > 180 ? 1 : 0;
 
   // Filled arc
-  const fillArcDeg = totalArc * percentage / 100;
+  const fillArcDeg = totalArc * safePercentage / 100;
   const fillLargeArc = fillArcDeg > 180 ? 1 : 0;
 
-  const color = percentage >= 50
+  const color = safePercentage >= 50
     ? 'hsl(var(--yes))'
     : 'hsl(var(--no))';
 
@@ -62,7 +66,7 @@ export default function ProbabilityGauge({ percentage, size = 'sm' }: Probabilit
         style={{ overflow: 'visible' }}
       >
         {/* Background arc (unfilled portion) */}
-        {percentage < 100 && (
+        {safePercentage < 100 && (
           <path
             d={`M ${fx} ${fy} A ${r} ${r} 0 ${bgLargeArc} 1 ${ex} ${ey}`}
             fill="none"
@@ -72,7 +76,7 @@ export default function ProbabilityGauge({ percentage, size = 'sm' }: Probabilit
           />
         )}
         {/* Filled arc */}
-        {percentage > 0 && (
+        {safePercentage > 0 && (
           <path
             d={`M ${sx} ${sy} A ${r} ${r} 0 ${fillLargeArc} 1 ${fx} ${fy}`}
             fill="none"
@@ -90,7 +94,7 @@ export default function ProbabilityGauge({ percentage, size = 'sm' }: Probabilit
           className="font-medium tabular-nums text-foreground leading-none"
           style={{ fontSize: isLarge ? 18 : 14 }}
         >
-          {percentage}%
+          {displayPercentage}%
         </span>
         <span
           className="font-medium leading-tight"

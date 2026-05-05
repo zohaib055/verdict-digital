@@ -62,39 +62,41 @@ export default function Markets() {
     <div className="pb-20 md:pb-6">
       <div className="border-b border-border bg-card/50">
         <div className="max-w-[1400px] mx-auto px-4 lg:px-6">
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-thin py-3">
-            {topicChips.map((chip) => (
-              <button
-                key={chip}
-                onClick={() => setSelectedTopic(chip)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors border ${
-                  selectedTopic === chip
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-transparent text-muted-foreground border-border hover:border-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {chip}
-              </button>
-            ))}
+          <div className="flex flex-col gap-3 py-3 xl:flex-row xl:items-center">
+            <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto scrollbar-thin pb-1 xl:pb-0">
+              {topicChips.map((chip) => (
+                <button
+                  key={chip}
+                  onClick={() => setSelectedTopic(chip)}
+                  className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors ${
+                    selectedTopic === chip
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-transparent text-muted-foreground border-border hover:border-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {chip}
+                </button>
+              ))}
+            </div>
 
-            <div className="ml-auto flex items-center gap-2 shrink-0">
-              <div className="relative hidden md:block">
+            <div className="flex items-center gap-2 xl:shrink-0">
+              <div className="relative min-w-0 flex-1 md:max-w-64">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
                   placeholder="Filter..."
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
-                  className="pl-8 h-8 w-40 bg-muted border-border text-xs"
+                  className="h-8 w-full bg-muted pl-8 text-xs"
                 />
               </div>
               <select
                 value={sortBy}
                 onChange={(event) => setSortBy(event.target.value)}
-                className="text-xs bg-muted border border-border rounded-md px-2 py-1.5 text-foreground h-8"
+                className="h-8 rounded-md border border-border bg-muted px-2 py-1.5 text-xs text-foreground"
               >
                 {sortOptions.map((sortOption) => <option key={sortOption} value={sortOption}>{sortOption}</option>)}
               </select>
-              <button className="p-1.5 rounded-md hover:bg-accent text-muted-foreground">
+              <button className="rounded-md p-1.5 text-muted-foreground hover:bg-accent">
                 <SlidersHorizontal className="h-4 w-4" />
               </button>
             </div>
