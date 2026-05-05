@@ -49,7 +49,7 @@ CORS_ALLOW_ORIGINS=["https://your-frontend-domain.com","http://your-server-ip:51
 For a frontend build that talks directly to this backend, set:
 
 ```bash
-VITE_API_BASE_URL=http://your-server-ip:8001/api/v1
+VITE_API_BASE_URL=http://verdict-api.workassign.org/api/v1
 ```
 
 ## 4. Run Migrations
@@ -90,7 +90,7 @@ sudo ufw allow 8001/tcp
 
 ## 6. Optional Nginx Proxy
 
-The included Nginx config proxies port `80` to the backend on `127.0.0.1:8001`.
+The included Nginx config creates a vhost for `verdict-api.workassign.org` and proxies port `80` to the backend on `127.0.0.1:8001`.
 
 ```bash
 sudo cp /opt/verdict-backend/deploy/nginx-verdict-backend.conf /etc/nginx/sites-available/verdict-backend
@@ -102,8 +102,14 @@ sudo systemctl reload nginx
 Then the backend is available at:
 
 ```bash
-http://your-server-ip/health
-http://your-server-ip/docs
+http://verdict-api.workassign.org/health
+http://verdict-api.workassign.org/docs
+```
+
+If DNS has not propagated yet, confirm the vhost locally from the server:
+
+```bash
+curl -H "Host: verdict-api.workassign.org" http://127.0.0.1/health
 ```
 
 ## Updating A Deployment
