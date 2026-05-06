@@ -26,15 +26,6 @@ class Settings(BaseSettings):
 
     LOG_LEVEL: str = "INFO"
 
-    OPENAI_API_KEY: str | None = None
-    OPENAI_MODEL: str | None = None
-
-    AWS_REGION: str = "us-east-1"
-    AWS_S3_BUCKET: str | None = None
-    AWS_ACCESS_KEY_ID: str | None = None
-    AWS_SECRET_ACCESS_KEY: str | None = None
-    AWS_S3_ENDPOINT_URL: str | None = None
-
     POLITICAL_SCHEDULER_ENABLED: bool = True
     POLITICAL_SCHEDULER_POLL_SECONDS: int = 60
     POLITICAL_SCHEDULER_DEFAULT_INTERVAL_MINUTES: int = 1
