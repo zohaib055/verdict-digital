@@ -68,6 +68,12 @@ Check that current ORM metadata matches the live database:
 alembic check
 ```
 
+Run backend tests:
+
+```bash
+pytest
+```
+
 ## Frontend Setup
 
 Install dependencies:
