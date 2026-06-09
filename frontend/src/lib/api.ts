@@ -1,5 +1,17 @@
-export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "http://127.0.0.1:8000/api/v1";
+function resolveApiBaseUrl() {
+  const configuredUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "");
+  if (configuredUrl && !configuredUrl.includes("127.0.0.1") && !configuredUrl.includes("localhost")) {
+    return configuredUrl;
+  }
+
+  if (typeof window !== "undefined" && window.location.hostname === "verdict.workassign.org") {
+    return "https://verdict-api.workassign.org/api/v1";
+  }
+
+  return configuredUrl || "http://127.0.0.1:8000/api/v1";
+}
+
+export const API_BASE_URL = resolveApiBaseUrl();
 
 const TOKEN_KEY = "verdict_token";
 
