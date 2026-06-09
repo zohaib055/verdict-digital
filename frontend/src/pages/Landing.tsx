@@ -223,6 +223,49 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
+      <footer className="border-t border-border bg-card/45 px-4 py-10 sm:px-6">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-10 md:grid-cols-[1.2fr_.8fr_.8fr]">
+            <div>
+              <Link to="/" className="inline-flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
+                  <span className="text-sm font-bold text-primary-foreground">V</span>
+                </div>
+                <span className="text-lg font-bold tracking-tight text-foreground">Verdict</span>
+              </Link>
+              <p className="mt-4 max-w-md text-sm leading-7 text-muted-foreground">
+                Play-money political prediction markets for testing judgment, building a public record, and learning from source-backed outcomes.
+              </p>
+            </div>
+
+            <div>
+              <div className="mb-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Product</div>
+              <div className="grid gap-3 text-sm">
+                <Link to="/markets" className="text-muted-foreground transition-colors hover:text-foreground">Markets</Link>
+                <Link to="/about" className="text-muted-foreground transition-colors hover:text-foreground">About</Link>
+                <Link to="/login" className="text-muted-foreground transition-colors hover:text-foreground">Log In</Link>
+                <Link to="/signup" className="text-muted-foreground transition-colors hover:text-foreground">Sign Up</Link>
+              </div>
+            </div>
+
+            <div>
+              <div className="mb-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Policies</div>
+              <div className="grid gap-3 text-sm">
+                <Link to="/terms" className="text-muted-foreground transition-colors hover:text-foreground">Terms</Link>
+                <Link to="/privacy" className="text-muted-foreground transition-colors hover:text-foreground">Privacy</Link>
+                <Link to="/risk" className="text-muted-foreground transition-colors hover:text-foreground">Risk Disclosure</Link>
+                <Link to="/resolution-policy" className="text-muted-foreground transition-colors hover:text-foreground">Resolution Policy</Link>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-10 flex flex-col gap-3 border-t border-border pt-6 text-xs leading-6 text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+            <p>© {new Date().getFullYear()} Verdict. All rights reserved.</p>
+            <p>Verdict uses play money only. It is not a gambling, brokerage, or real-money trading platform.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
