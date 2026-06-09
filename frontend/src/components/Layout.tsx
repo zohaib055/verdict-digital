@@ -20,7 +20,7 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, loading, logout } = useAuth();
   const navLinks = useMemo(
     () => (
       user?.is_admin
@@ -68,7 +68,12 @@ export default function Layout({ children }: LayoutProps) {
 
           {/* Right side */}
           <div className="ml-auto flex items-center gap-3">
-            {user ? (
+            {loading ? (
+              <div className="flex items-center gap-3">
+                <div className="hidden h-8 w-32 rounded-full bg-secondary md:block" />
+                <div className="h-8 w-20 rounded-md bg-secondary" />
+              </div>
+            ) : user ? (
               <>
                 <div className="hidden md:flex items-center gap-2 rounded-full border border-border bg-secondary px-3 py-1.5 text-xs text-muted-foreground">
                   <Coins className="h-3.5 w-3.5 text-primary" />

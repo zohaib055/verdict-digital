@@ -1,56 +1,89 @@
-import { Link } from 'react-router-dom';
-import { ArrowRight, BarChart3, CheckCircle, Coins, Globe, Shield, TrendingUp, Users, Zap } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { Link, Navigate } from 'react-router-dom';
+import {
+  ArrowRight,
+  BarChart3,
+  CheckCircle2,
+  Coins,
+  LockKeyhole,
+  Newspaper,
+  ShieldCheck,
+  Sparkles,
+  Trophy,
+} from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { api } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 import heroBg from '@/assets/hero-bg.jpg';
 
-const steps = [
-  { step: '01', title: 'Create Account', description: 'Sign up with email and get a play-money balance, no wallet required.', icon: Users },
-  { step: '02', title: 'Browse Political Markets', description: 'Explore elections, policy, and geopolitical markets curated for public sharing.', icon: BarChart3 },
-  { step: '03', title: 'Buy YES or NO', description: 'Take a position, watch the probability move, and share your call.', icon: TrendingUp },
-  { step: '04', title: 'Resolve on Official Sources', description: 'Markets close with source-backed explanations and public outcomes.', icon: CheckCircle },
+const valueProps = [
+  {
+    title: 'Trade with play money',
+    description: 'No wallet setup, deposits, or crypto flow. Create an account and start with internal credits.',
+    icon: Coins,
+  },
+  {
+    title: 'Questions with receipts',
+    description: 'Markets are framed around source-backed events, deadlines, and resolution criteria.',
+    icon: Newspaper,
+  },
+  {
+    title: 'Build a public record',
+    description: 'Track your calls, compete on leaderboards, and share predictions from your profile.',
+    icon: Trophy,
+  },
 ];
 
-function formatCurrency(value: number) {
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`;
-  return `$${value.toFixed(0)}`;
-}
+const trustPoints = [
+  'No wallet required',
+  'Play-money balances',
+  'Source-backed outcomes',
+  'Public profile stats',
+];
+
+const steps = [
+  'Create a free account',
+  'Claim weekly play-money credits',
+  'Pick YES or NO on political outcomes',
+  'Track your performance as markets resolve',
+];
 
 export default function Landing() {
-  const { data } = useQuery({
-    queryKey: ['landing-markets'],
-    queryFn: () => api.markets({ limit: 4 }),
-  });
+  const { user, loading } = useAuth();
 
-  const featuredMarkets = data || [];
+  if (loading) {
+    return <div className="min-h-screen bg-background" />;
+  }
 
-  const totalVolume = featuredMarkets.reduce((sum, market) => sum + market.traded_volume, 0);
+  if (user) {
+    return <Navigate to="/explore" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="absolute top-0 left-0 right-0 z-50">
-        <div className="max-w-7xl mx-auto flex items-center justify-between h-16 px-6 lg:px-8">
+      <header className="absolute left-0 right-0 top-0 z-50">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link to="/" className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">V</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-md border border-white/20 bg-white/10 backdrop-blur">
+              <span className="text-sm font-bold text-white">V</span>
             </div>
-            <span className="font-bold text-lg tracking-tight text-white">Verdict</span>
+            <span className="text-lg font-bold tracking-tight text-white">Verdict</span>
           </Link>
-          <nav className="hidden md:flex items-center gap-8 text-sm text-white/70">
-            <Link to="/markets" className="hover:text-white transition-colors">Markets</Link>
-            <Link to="/about" className="hover:text-white transition-colors">About</Link>
-            <a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a>
+
+          <nav className="hidden items-center gap-7 text-sm font-medium text-white/68 md:flex">
+            <Link to="/markets" className="transition-colors hover:text-white">Markets</Link>
+            <Link to="/about" className="transition-colors hover:text-white">About</Link>
+            <a href="#how-it-works" className="transition-colors hover:text-white">How It Works</a>
           </nav>
-          <div className="flex items-center gap-3">
+
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link to="/login">
-              <Button variant="ghost" size="sm" className="text-white/80 hover:text-white hover:bg-white/10">Log In</Button>
+              <Button variant="ghost" size="sm" className="text-white/78 hover:bg-white/10 hover:text-white">
+                Log In
+              </Button>
             </Link>
             <Link to="/signup">
-              <Button size="sm" className="bg-white text-primary hover:bg-white/90 gap-1.5 font-semibold">
-                Get Started <ArrowRight className="h-3.5 w-3.5" />
+              <Button size="sm" className="gap-1.5 bg-white text-slate-950 hover:bg-white/90">
+                Sign Up <ArrowRight className="h-3.5 w-3.5" />
               </Button>
             </Link>
           </div>
@@ -58,124 +91,133 @@ export default function Landing() {
       </header>
 
       <section
-        className="relative min-h-[85vh] flex items-center justify-center overflow-hidden"
+        className="relative min-h-[88vh] overflow-hidden"
         style={{
           backgroundImage: `url(${heroBg})`,
-          backgroundSize: 'cover',
           backgroundPosition: 'center',
+          backgroundSize: 'cover',
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-[hsl(215,50%,8%)]/90 via-[hsl(215,50%,8%)]/80 to-background" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,hsl(215_50%_8%/.97),hsl(215_50%_8%/.9)_48%,hsl(215_50%_8%/.66)),linear-gradient(180deg,hsl(215_50%_8%/.36),hsl(215_50%_8%/.97))]" />
 
-        <div className="relative z-10 max-w-4xl mx-auto text-center px-6 py-32">
-          <div className="inline-flex items-center gap-2 text-xs font-medium text-white/60 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full px-4 py-1.5 mb-8">
-            <Globe className="h-3.5 w-3.5" /> Political prediction markets with public profiles and shareable calls
+        <div className="relative z-10 mx-auto flex min-h-[88vh] max-w-7xl items-center px-4 pb-20 pt-24 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/[0.07] px-3.5 py-2 text-xs font-semibold uppercase tracking-wide text-emerald-200 backdrop-blur">
+              <Sparkles className="h-3.5 w-3.5" />
+              Political prediction markets, without real-money risk
+            </div>
+
+            <h1 className="max-w-4xl text-4xl font-extrabold leading-[1.04] tracking-normal text-white sm:text-5xl lg:text-7xl">
+              Make better political calls. Build a public track record.
+            </h1>
+
+            <p className="mt-6 max-w-2xl text-base leading-8 text-white/68 sm:text-lg">
+              Verdict lets you trade YES or NO on politics, elections, courts, and global events using play money. No wallet. No deposits. Just clear questions, source-backed outcomes, and a profile that shows how sharp your calls are.
+            </p>
+
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+              <Link to="/signup">
+                <Button size="lg" className="h-12 w-full gap-2 px-7 text-base font-semibold sm:w-auto">
+                  Create Free Account <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+              <Link to="/markets">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="h-12 w-full border-white/18 bg-white/[0.06] px-7 text-base font-semibold text-white hover:bg-white/12 hover:text-white sm:w-auto"
+                >
+                  Browse Markets
+                </Button>
+              </Link>
+            </div>
+
+            <div className="mt-8 flex flex-wrap gap-2">
+              {trustPoints.map((point) => (
+                <div
+                  key={point}
+                  className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-slate-950/42 px-3 py-2 text-sm text-white/72 backdrop-blur"
+                >
+                  <CheckCircle2 className="h-4 w-4 text-emerald-300" />
+                  {point}
+                </div>
+              ))}
+            </div>
           </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] text-white mb-6">
-            Trade Political Outcomes
-            <br />
-            <span className="text-white/60">with Play Money, Not Wallets</span>
-          </h1>
-          <p className="text-lg md:text-xl text-white/50 max-w-2xl mx-auto leading-relaxed mb-10">
-            Verdict gives users instant-execution prediction markets, Bayesian-smoothed probabilities, weekly faucet credits, and public profile stats designed to be shared.
-          </p>
-          <Link to="/markets">
-            <Button size="lg" className="bg-white text-primary hover:bg-white/90 gap-2 h-12 px-8 text-base font-semibold">
-              View Markets <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
         </div>
       </section>
 
-      <section className="relative -mt-16 z-20 px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-border rounded-xl overflow-hidden shadow-lg">
-            {[
-              { label: 'Visible Volume', value: formatCurrency(totalVolume), icon: TrendingUp },
-              { label: 'Public Markets', value: String(featuredMarkets.length || 0), icon: BarChart3 },
-              { label: 'Weekly Faucet', value: '$1,000', icon: Coins },
-              { label: 'Resolution Mode', value: 'Manual', icon: Shield },
-            ].map((stat) => (
-              <div key={stat.label} className="bg-card p-5 lg:p-6 text-center">
-                <stat.icon className="h-5 w-5 text-primary mx-auto mb-2" />
-                <div className="text-xl lg:text-2xl font-bold tabular-nums">{stat.value}</div>
-                <div className="text-xs text-muted-foreground mt-1">{stat.label}</div>
+      <section className="border-y border-border bg-card/70 px-4 py-5 sm:px-6">
+        <div className="mx-auto grid max-w-7xl gap-4 md:grid-cols-3">
+          {[
+            { label: 'Fast signup', detail: 'Email, username, and you are in.', icon: LockKeyhole },
+            { label: 'Weekly credits', detail: 'Come back and keep making calls.', icon: Coins },
+            { label: 'Shareable reputation', detail: 'Your best predictions become proof.', icon: BarChart3 },
+          ].map((item) => (
+            <div key={item.label} className="flex items-center gap-4 py-2">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                <item.icon className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="font-semibold text-foreground">{item.label}</div>
+                <div className="text-sm leading-6 text-muted-foreground">{item.detail}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="how-it-works" className="px-4 py-16 sm:px-6 lg:py-20">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[.82fr_1.18fr] lg:items-start">
+          <div>
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              Built For Clear Outcomes
+            </div>
+            <h2 className="text-2xl font-bold tracking-normal text-foreground sm:text-3xl">
+              A cleaner way to test your political instincts.
+            </h2>
+            <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground">
+              Verdict is for people who want to make specific calls, compare judgment with others, and see those calls resolved against public evidence.
+            </p>
+            <Link to="/signup" className="mt-7 inline-flex">
+              <Button className="gap-2">
+                Start Predicting <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            {valueProps.map((item) => (
+              <div key={item.title} className="rounded-lg border border-border bg-card p-5">
+                <div className="mb-5 flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <item.icon className="h-5 w-5" />
+                </div>
+                <h3 className="font-semibold text-foreground">{item.title}</h3>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">{item.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="py-20 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-10">
-            <div>
-              <h2 className="text-2xl font-bold">Featured Markets</h2>
-              <p className="text-sm text-muted-foreground mt-1">Live public markets pulled from the backend.</p>
-            </div>
-            <Link to="/markets" className="text-sm text-primary hover:underline flex items-center gap-1 font-medium">
-              View all markets <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
+      <section className="border-t border-border px-4 py-16 sm:px-6 lg:py-20">
+        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_1fr] lg:items-center">
+          <div>
+            <h2 className="text-2xl font-bold tracking-normal text-foreground sm:text-3xl">
+              From signup to first prediction in minutes.
+            </h2>
+            <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground">
+              The product is intentionally simple: get credits, choose a side, and let your record speak over time.
+            </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {featuredMarkets.map((market) => (
-              <Link
-                key={market.id}
-                to={`/market/${market.slug}`}
-                className="group rounded-xl border border-border bg-card p-5 hover:shadow-lg hover:border-primary/20 transition-all duration-200"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground bg-secondary px-2 py-0.5 rounded">
-                    {market.category}
-                  </span>
-                  <span className="flex items-center gap-1 text-[10px] text-yes">
-                    <span className="h-1.5 w-1.5 rounded-full bg-yes animate-pulse" />
-                    Live
-                  </span>
-                </div>
-                <h3 className="font-semibold text-sm mt-2 mb-4 leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-                  {market.question}
-                </h3>
-                <div className="flex gap-2 mb-3">
-                  <div className="flex-1 rounded-lg bg-yes-muted px-2 py-2 text-center">
-                    <div className="text-[10px] uppercase font-semibold text-yes">Yes</div>
-                    <div className="text-sm font-bold tabular-nums text-yes">{(market.display_probability_yes * 100).toFixed(1)}%</div>
-                  </div>
-                  <div className="flex-1 rounded-lg bg-no-muted px-2 py-2 text-center">
-                    <div className="text-[10px] uppercase font-semibold text-no">No</div>
-                    <div className="text-sm font-bold tabular-nums text-no">{((1 - market.display_probability_yes) * 100).toFixed(1)}%</div>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                  <span>Vol {formatCurrency(market.traded_volume)}</span>
-                  <span>{new Date(market.close_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="how-it-works" className="py-20 px-6 bg-card border-y border-border">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <h2 className="text-2xl font-bold">How It Works</h2>
-            <p className="text-sm text-muted-foreground mt-2 max-w-lg mx-auto">The product stays simple for users: create an account, claim weekly credits, trade, and share the result.</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="rounded-lg border border-border bg-card p-2">
             {steps.map((step, index) => (
-              <div key={step.step} className="relative">
-                {index < steps.length - 1 && (
-                  <div className="hidden lg:block absolute top-5 left-[calc(50%+24px)] w-[calc(100%-48px)] h-px bg-border" />
-                )}
-                <div className="space-y-4">
-                  <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <step.icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="text-xs font-bold text-primary tracking-wider">STEP {step.step}</div>
-                  <h3 className="font-semibold">{step.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
+              <div key={step} className="flex items-center gap-4 rounded-md px-4 py-4">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-secondary text-sm font-bold text-foreground">
+                  {index + 1}
                 </div>
+                <div className="font-medium text-foreground">{step}</div>
               </div>
             ))}
           </div>

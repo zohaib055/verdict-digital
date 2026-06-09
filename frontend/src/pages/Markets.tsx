@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { api } from '@/lib/api';
 import { CATEGORIES, type Market } from '@/types/market';
 
-const sortOptions = ['Volume', 'Closing Soon', 'Probability'] as const;
+const sortOptions = ['Latest', 'Volume', 'Closing Soon', 'Probability'] as const;
 const topicChips = ['All', ...CATEGORIES] as const;
 
 function mapMarket(market: Awaited<ReturnType<typeof api.markets>>[number]): Market {
@@ -28,7 +28,7 @@ function mapMarket(market: Awaited<ReturnType<typeof api.markets>>[number]): Mar
 
 export default function Markets() {
   const [searchParams] = useSearchParams();
-  const [sortBy, setSortBy] = useState<string>('Volume');
+  const [sortBy, setSortBy] = useState<string>('Latest');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTopic, setSelectedTopic] = useState<string>(searchParams.get('category') || 'All');
 
@@ -46,6 +46,8 @@ export default function Markets() {
 
     return [...markets].sort((a, b) => {
       switch (sortBy) {
+        case 'Latest':
+          return 0;
         case 'Volume':
           return b.volume - a.volume;
         case 'Closing Soon':

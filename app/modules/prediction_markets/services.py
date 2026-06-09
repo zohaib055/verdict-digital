@@ -250,7 +250,7 @@ def list_markets(
         stmt = stmt.where(Market.status == status)
     if category:
         stmt = stmt.where(Market.category == category)
-    stmt = stmt.order_by(Market.display_probability_yes.desc(), Market.traded_volume.desc()).limit(limit)
+    stmt = stmt.order_by(Market.created_at.desc(), Market.id.desc()).limit(limit)
     return list(db.scalars(stmt).all())
 
 
