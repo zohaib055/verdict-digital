@@ -62,8 +62,8 @@ function titleCaseTopic(value?: string | null) {
 
 export default function Index() {
   const { data, isLoading, error } = useQuery({
-    queryKey: ['markets', 'explore'],
-    queryFn: () => api.markets({ limit: 50 }),
+    queryKey: ['markets', 'explore', 'open'],
+    queryFn: () => api.markets({ status: 'open', limit: 50 }),
   });
   const suggestionsQuery = useQuery({
     queryKey: ['market-suggestions', 'explore'],

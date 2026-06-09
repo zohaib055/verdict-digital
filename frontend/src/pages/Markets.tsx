@@ -33,8 +33,8 @@ export default function Markets() {
   const [selectedTopic, setSelectedTopic] = useState<string>(searchParams.get('category') || 'All');
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['markets', 'list'],
-    queryFn: () => api.markets({ limit: 100 }),
+    queryKey: ['markets', 'list', 'open'],
+    queryFn: () => api.markets({ status: 'open', limit: 100 }),
   });
 
   const filtered = useMemo(() => {
