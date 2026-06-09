@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Search, Menu, X, BarChart3, Briefcase, Info, Home, UserCircle2, Coins, Trophy, ShieldCheck, Radar } from 'lucide-react';
+import BrandLogo from '@/components/BrandLogo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/lib/auth';
@@ -48,12 +49,7 @@ export default function Layout({ children }: LayoutProps) {
           </button>
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 shrink-0">
-            <div className="h-7 w-7 rounded-md bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">V</span>
-            </div>
-            <span className="font-bold text-lg tracking-tight hidden sm:block">Verdict</span>
-          </Link>
+          <BrandLogo className="shrink-0" markClassName="h-7 w-7" textClassName="hidden sm:block" />
 
           {/* Search */}
           <div className="flex-1 max-w-lg hidden sm:block">

@@ -11,6 +11,7 @@ import {
   Trophy,
 } from 'lucide-react';
 
+import BrandLogo from '@/components/BrandLogo';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth';
 import heroBg from '@/assets/hero-bg.jpg';
@@ -62,12 +63,7 @@ export default function Landing() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="absolute left-0 right-0 top-0 z-50">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md border border-white/20 bg-white/10 backdrop-blur">
-              <span className="text-sm font-bold text-white">V</span>
-            </div>
-            <span className="text-lg font-bold tracking-tight text-white">Verdict</span>
-          </Link>
+          <BrandLogo textClassName="text-white" markClassName="shadow-lg shadow-black/20" />
 
           <nav className="hidden items-center gap-7 text-sm font-medium text-white/68 md:flex">
             <Link to="/markets" className="transition-colors hover:text-white">Markets</Link>
@@ -112,7 +108,7 @@ export default function Landing() {
             </h1>
 
             <p className="mt-6 max-w-2xl text-base leading-8 text-white/68 sm:text-lg">
-              Verdict lets you trade YES or NO on politics, elections, courts, and global events using play money. No wallet. No deposits. Just clear questions, source-backed outcomes, and a profile that shows how sharp your calls are.
+              Verdict is a play-money political prediction platform for people who want to make specific calls, track judgment over time, and compare their public record against real outcomes.
             </p>
 
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -228,12 +224,7 @@ export default function Landing() {
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-10 md:grid-cols-[1.2fr_.8fr_.8fr]">
             <div>
-              <Link to="/" className="inline-flex items-center gap-2.5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
-                  <span className="text-sm font-bold text-primary-foreground">V</span>
-                </div>
-                <span className="text-lg font-bold tracking-tight text-foreground">Verdict</span>
-              </Link>
+              <BrandLogo />
               <p className="mt-4 max-w-md text-sm leading-7 text-muted-foreground">
                 Play-money political prediction markets for testing judgment, building a public record, and learning from source-backed outcomes.
               </p>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 
+import BrandLogo from '@/components/BrandLogo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/sonner';
@@ -40,12 +41,7 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-md space-y-8">
-        <Link to="/" className="flex items-center gap-2 justify-center">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">V</span>
-          </div>
-          <span className="font-bold text-lg">Verdict</span>
-        </Link>
+        <BrandLogo className="justify-center" />
 
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold">Sign in</h1>
