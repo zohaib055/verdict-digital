@@ -63,6 +63,11 @@ def _parse_datetime(raw: str | None) -> datetime | None:
             return parsed.replace(tzinfo=UTC)
         except ValueError:
             continue
+    try:
+        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        return parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)
+    except ValueError:
+        pass
     return None
 
 
@@ -301,17 +306,21 @@ def _cluster_events_by_topic(db: Session, events: list[PoliticalEvent]) -> list[
 
 
 def _make_suggestion(cluster: EventCluster, related_events: list[PoliticalEvent]) -> MarketSuggestion:
-    title = f"{cluster.topic.replace('-', ' ').title()} market"
-    question = f"Will the next major {cluster.topic.replace('-', ' ')} development occur within 30 days?"
-    resolution = (
-        "Resolve YES if two independent mainstream sources confirm the event. "
-        "Resolve NO if no qualifying event occurs by market expiry."
-    )
     recent_events = sorted(
         related_events,
         key=lambda event: event.published_at or now_utc(),
         reverse=True,
     )[:3]
+    top_event = recent_events[0] if recent_events else None
+    topic_label = cluster.topic.replace("-", " ").title()
+    headline = top_event.headline.strip() if top_event else topic_label
+    compact_headline = headline[:140].rstrip()
+    title = f"{topic_label}: {compact_headline[:90].rstrip()}"
+    question = f"Will officials confirm a concrete outcome tied to \"{compact_headline}\" within 14 days?"
+    resolution = (
+        "Resolve YES if an official statement, filing, vote, ruling, or agency action confirms a concrete outcome tied to the cited story. "
+        "Resolve NO if no qualifying official outcome is reported by market expiry."
+    )
     return MarketSuggestion(
         cluster_id=cluster.id,
         status="proposed",
@@ -460,10 +469,27 @@ def list_clusters(db: Session, limit: int = 50) -> list[EventCluster]:
 
 
 def list_market_suggestions(db: Session, limit: int = 50) -> list[MarketSuggestion]:
+    freshness_cutoff = now_utc() - timedelta(days=21)
     stmt: Select[tuple[MarketSuggestion]] = (
-        select(MarketSuggestion).order_by(MarketSuggestion.created_at.desc()).limit(limit)
+        select(MarketSuggestion).order_by(MarketSuggestion.created_at.desc()).limit(limit * 4)
     )
-    return list(db.scalars(stmt).all())
+    suggestions: list[MarketSuggestion] = []
+    for suggestion in db.scalars(stmt).all():
+        if "next major" in suggestion.market_question.lower() and "within 30 days" in suggestion.market_question.lower():
+            continue
+        source_context = suggestion.metadata_json.get("source_context", [])
+        published_values = [
+            _parse_datetime(item.get("published_at"))
+            for item in source_context
+            if isinstance(item, dict)
+        ]
+        latest_published = max((value for value in published_values if value), default=None)
+        if latest_published and latest_published < freshness_cutoff:
+            continue
+        suggestions.append(suggestion)
+        if len(suggestions) >= limit:
+            break
+    return suggestions
 
 
 def get_job_by_id(db: Session, job_id: int) -> SchedulerJob | None:
