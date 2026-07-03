@@ -197,11 +197,7 @@ def create_trade(
     current_user: User = Depends(require_current_user),
 ):
     try:
-        return services.execute_trade(
-            db,
-            market_id,
-            payload.model_copy(update={"user_id": current_user.id}),
-        )
+        return services.execute_trade(db, market_id, payload, user_id=current_user.id)
     except Exception as exc:
         raise _translate_error(exc)
 

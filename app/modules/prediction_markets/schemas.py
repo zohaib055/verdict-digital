@@ -111,7 +111,6 @@ class MarketListItem(BaseModel):
 
 
 class TradeCreate(BaseModel):
-    user_id: int
     side: TradeSide
     action: TradeAction
     amount: Decimal = Field(gt=Decimal("0"))

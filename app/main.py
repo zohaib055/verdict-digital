@@ -10,10 +10,14 @@ from app.core.settings import settings
 
 def create_app() -> FastAPI:
     setup_logging()
+    expose_schema = settings.ENV.lower() not in {"prod", "production"}
 
     app = FastAPI(
         title=settings.APP_NAME,
         debug=settings.DEBUG,
+        docs_url="/docs" if expose_schema else None,
+        redoc_url="/redoc" if expose_schema else None,
+        openapi_url="/openapi.json" if expose_schema else None,
     )
 
     app.add_middleware(

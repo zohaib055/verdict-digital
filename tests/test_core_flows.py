@@ -85,22 +85,24 @@ def _buy_yes_trade(
     client: TestClient,
     market_id: int,
     trader_token: str,
-    user_id: int,
+    user_id: int | None = None,
     *,
     amount: str = "25",
     client_order_id: str = "test-order-001",
 ) -> dict:
+    payload = {
+        "side": "yes",
+        "action": "buy",
+        "amount": amount,
+        "quantity_type": "cash",
+        "client_order_id": client_order_id,
+    }
+    if user_id is not None:
+        payload["user_id"] = user_id
     trade_response = client.post(
         f"/api/v1/prediction/markets/{market_id}/trade",
         headers=_auth_header(trader_token),
-        json={
-            "user_id": user_id,
-            "side": "yes",
-            "action": "buy",
-            "amount": amount,
-            "quantity_type": "cash",
-            "client_order_id": client_order_id,
-        },
+        json=payload,
     )
     assert trade_response.status_code == 201, trade_response.text
     return trade_response.json()
@@ -150,6 +152,25 @@ def test_non_admin_cannot_create_market(client: TestClient) -> None:
     assert response.json()["detail"] == "Admin access required"
 
 
+def test_user_directory_requires_admin(client: TestClient, db_session: Session) -> None:
+    _signup(client, "admin@example.com", "admin_user")
+    _promote_to_admin(db_session, "admin@example.com")
+    admin_token = _login(client, "admin@example.com")["access_token"]
+    trader = _signup(client, "directory-trader@example.com", "directory_trader")
+    trader_token = trader["access_token"]
+    user_id = trader["user"]["id"]
+
+    list_response = client.get("/api/v1/users/", headers=_auth_header(trader_token))
+    assert list_response.status_code == 403
+
+    detail_response = client.get(f"/api/v1/users/{user_id}", headers=_auth_header(trader_token))
+    assert detail_response.status_code == 403
+
+    admin_list_response = client.get("/api/v1/users/", headers=_auth_header(admin_token))
+    assert admin_list_response.status_code == 200, admin_list_response.text
+    assert user_id in {user["id"] for user in admin_list_response.json()}
+
+
 def test_user_can_execute_buy_trade(client: TestClient, db_session: Session) -> None:
     _signup(client, "admin@example.com", "admin_user")
     _promote_to_admin(db_session, "admin@example.com")
@@ -170,7 +191,7 @@ def test_user_can_execute_buy_trade(client: TestClient, db_session: Session) -> 
     assert Decimal(quote["shares_out"]) > Decimal("0")
     assert Decimal(quote["balance_required"]) == Decimal("25.0000")
 
-    trade = _buy_yes_trade(client, market["id"], trader_token, user_id)
+    trade = _buy_yes_trade(client, market["id"], trader_token)
     assert trade["user_id"] == user_id
     assert trade["market_id"] == market["id"]
     assert trade["side"] == "yes"

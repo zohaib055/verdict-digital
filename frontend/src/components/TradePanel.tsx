@@ -67,7 +67,6 @@ export default function TradePanel({ marketId, yesPrice, noPrice, onTradeComplet
     setSubmitting(true);
     try {
       await api.trade(marketId, {
-        user_id: user.id,
         side: outcome,
         action: 'buy',
         amount: numericAmount,

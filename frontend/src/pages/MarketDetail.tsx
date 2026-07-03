@@ -128,7 +128,10 @@ export default function MarketDetail() {
               </div>
               <div className="flex items-center gap-1.5 text-muted-foreground">
                 <Users className="h-3.5 w-3.5" />
-                <span>{Math.max(1, Math.round(market.traded_volume / 500))} traders</span>
+                <span>
+                  {Math.max(1, Math.round(market.traded_volume / 500))}{' '}
+                  {Math.max(1, Math.round(market.traded_volume / 500)) === 1 ? 'trader' : 'traders'}
+                </span>
               </div>
               <div className="flex items-center gap-1.5 text-muted-foreground">
                 <Clock className="h-3.5 w-3.5" />

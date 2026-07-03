@@ -5,7 +5,9 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.modules.auth.dependencies import require_admin_user
 from app.modules.users import services
+from app.modules.users.models import User
 from app.modules.users.schemas import UserCreate, UserOut, UserUpdate
 
 
@@ -13,7 +15,11 @@ router = APIRouter()
 
 
 @router.post("/", response_model=UserOut, status_code=status.HTTP_201_CREATED)
-def create_user(payload: UserCreate, db: Session = Depends(get_db)):
+def create_user(
+    payload: UserCreate,
+    db: Session = Depends(get_db),
+    admin_user: User = Depends(require_admin_user),
+):
     try:
         return services.create_user(db, payload)
     except IntegrityError:
@@ -22,12 +28,19 @@ def create_user(payload: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/", response_model=list[UserOut])
-def list_users(db: Session = Depends(get_db)):
+def list_users(
+    db: Session = Depends(get_db),
+    admin_user: User = Depends(require_admin_user),
+):
     return services.list_users(db)
 
 
 @router.get("/{user_id}", response_model=UserOut)
-def get_user(user_id: int, db: Session = Depends(get_db)):
+def get_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    admin_user: User = Depends(require_admin_user),
+):
     user = services.get_user(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -35,7 +48,12 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{user_id}", response_model=UserOut)
-def update_user(user_id: int, payload: UserUpdate, db: Session = Depends(get_db)):
+def update_user(
+    user_id: int,
+    payload: UserUpdate,
+    db: Session = Depends(get_db),
+    admin_user: User = Depends(require_admin_user),
+):
     user = services.get_user(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -43,7 +61,11 @@ def update_user(user_id: int, payload: UserUpdate, db: Session = Depends(get_db)
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_user(user_id: int, db: Session = Depends(get_db)):
+def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    admin_user: User = Depends(require_admin_user),
+):
     user = services.get_user(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")

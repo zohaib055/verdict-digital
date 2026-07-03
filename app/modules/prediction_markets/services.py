@@ -5,7 +5,7 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal, ROUND_HALF_UP
 import re
 
-from sqlalchemy import Select, func, or_, select
+from sqlalchemy import Select, func, or_, select, update
 from sqlalchemy.orm import Session
 
 from app.core.settings import settings
@@ -75,6 +75,27 @@ def _q_prob(value: Decimal) -> Decimal:
 def _slugify(value: str) -> str:
     slug = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
     return slug[:160] or "market"
+
+
+TAG_RE = re.compile(r"<[^>]*>")
+CONTROL_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")
+MARKET_TEXT_FIELDS = {"title", "question", "description", "category", "terms", "resolution_criteria"}
+
+
+def _sanitize_market_text(value: str | None) -> str | None:
+    if value is None:
+        return None
+    without_tags = TAG_RE.sub("", value)
+    without_controls = CONTROL_RE.sub("", without_tags)
+    return re.sub(r"\s+", " ", without_controls).strip()
+
+
+def _sanitize_market_payload(payload: MarketCreate | MarketUpdate, *, exclude_unset: bool) -> dict:
+    data = payload.model_dump(exclude_unset=exclude_unset)
+    for field in MARKET_TEXT_FIELDS:
+        if field in data:
+            data[field] = _sanitize_market_text(data[field])
+    return data
 
 
 def _ensure_unique_slug(db: Session, base_slug: str, current_market_id: int | None = None) -> str:
@@ -176,43 +197,125 @@ def _stats_for_update_locked(db: Session, user_id: int) -> UserMarketStats:
     return stats
 
 
+def _decrement_user_balance(db: Session, user: User, amount: Decimal) -> None:
+    result = db.execute(
+        update(User)
+        .where(User.id == user.id, User.balance >= amount)
+        .values(balance=User.balance - amount)
+        .execution_options(synchronize_session=False)
+    )
+    if result.rowcount != 1:
+        raise ValueError("Insufficient balance")
+    db.refresh(user)
+
+
+def _increment_user_balance(db: Session, user: User, amount: Decimal) -> None:
+    result = db.execute(
+        update(User)
+        .where(User.id == user.id)
+        .values(balance=User.balance + amount)
+        .execution_options(synchronize_session=False)
+    )
+    if result.rowcount != 1:
+        raise ValueError("User not found")
+    db.refresh(user)
+
+
+def _increment_position_for_buy(db: Session, position: Position, side: TradeSide, shares: Decimal, cost: Decimal) -> None:
+    values = (
+        {
+            "yes_shares": Position.yes_shares + shares,
+            "cost_basis_yes": Position.cost_basis_yes + cost,
+        }
+        if side == TradeSide.yes
+        else {
+            "no_shares": Position.no_shares + shares,
+            "cost_basis_no": Position.cost_basis_no + cost,
+        }
+    )
+    result = db.execute(
+        update(Position)
+        .where(Position.id == position.id)
+        .values(**values)
+        .execution_options(synchronize_session=False)
+    )
+    if result.rowcount != 1:
+        raise ValueError("Position not found")
+    db.refresh(position)
+
+
+def _decrement_position_for_sell(
+    db: Session,
+    position: Position,
+    side: TradeSide,
+    shares: Decimal,
+    released_cost: Decimal,
+    realized_delta: Decimal,
+) -> None:
+    if side == TradeSide.yes:
+        share_column = Position.yes_shares
+        values = {
+            "yes_shares": Position.yes_shares - shares,
+            "cost_basis_yes": Position.cost_basis_yes - released_cost,
+            "realized_pnl": Position.realized_pnl + realized_delta,
+        }
+    else:
+        share_column = Position.no_shares
+        values = {
+            "no_shares": Position.no_shares - shares,
+            "cost_basis_no": Position.cost_basis_no - released_cost,
+            "realized_pnl": Position.realized_pnl + realized_delta,
+        }
+
+    result = db.execute(
+        update(Position)
+        .where(Position.id == position.id, share_column >= shares)
+        .values(**values)
+        .execution_options(synchronize_session=False)
+    )
+    if result.rowcount != 1:
+        raise ValueError("Insufficient shares")
+    db.refresh(position)
+
+
 def create_market(db: Session, payload: MarketCreate) -> Market:
     if payload.created_by_user_id is not None:
         creator = _get_user(db, payload.created_by_user_id)
         _require_admin(creator)
 
-    slug = _ensure_unique_slug(db, _slugify(payload.title))
+    data = _sanitize_market_payload(payload, exclude_unset=False)
+    slug = _ensure_unique_slug(db, _slugify(data["title"]))
     market = Market(
         slug=slug,
-        title=payload.title,
-        question=payload.question,
-        description=payload.description,
-        category=payload.category,
-        terms=payload.terms,
-        resolution_criteria=payload.resolution_criteria,
-        status=payload.status,
-        is_public=payload.is_public,
-        close_at=payload.close_at,
-        resolve_by=payload.resolve_by,
-        created_by_user_id=payload.created_by_user_id,
-        reserve_yes=_q_money(payload.base_liquidity),
-        reserve_no=_q_money(payload.base_liquidity),
-        base_liquidity=_q_money(payload.base_liquidity),
-        fee_bps=payload.fee_bps,
+        title=data["title"],
+        question=data["question"],
+        description=data.get("description"),
+        category=data["category"],
+        terms=data["terms"],
+        resolution_criteria=data["resolution_criteria"],
+        status=data["status"],
+        is_public=data["is_public"],
+        close_at=data["close_at"],
+        resolve_by=data.get("resolve_by"),
+        created_by_user_id=data.get("created_by_user_id"),
+        reserve_yes=_q_money(data["base_liquidity"]),
+        reserve_no=_q_money(data["base_liquidity"]),
+        base_liquidity=_q_money(data["base_liquidity"]),
+        fee_bps=data["fee_bps"],
         traded_volume=ZERO,
         raw_probability_yes=Decimal("0.5"),
         display_probability_yes=Decimal("0.5"),
-        smoothing_alpha=_q_money(payload.smoothing_alpha),
-        smoothing_beta=_q_money(payload.smoothing_beta),
-        smoothing_scale=_q_money(payload.smoothing_scale),
+        smoothing_alpha=_q_money(data["smoothing_alpha"]),
+        smoothing_beta=_q_money(data["smoothing_beta"]),
+        smoothing_scale=_q_money(data["smoothing_scale"]),
         metadata_json={
             "display_probability_policy": {
-                "alpha": str(payload.smoothing_alpha),
-                "beta": str(payload.smoothing_beta),
-                "scale": str(payload.smoothing_scale),
+                "alpha": str(data["smoothing_alpha"]),
+                "beta": str(data["smoothing_beta"]),
+                "scale": str(data["smoothing_scale"]),
                 "description": "Displayed probability uses a Beta prior centered near 50% and converges toward raw price as traded volume rises.",
             },
-            **(payload.metadata_json or {}),
+            **(data.get("metadata_json") or {}),
         },
     )
     _refresh_probabilities(market)
@@ -226,7 +329,7 @@ def update_market(db: Session, market_id: int, payload: MarketUpdate) -> Market:
     market = db.get(Market, market_id)
     if not market:
         raise ValueError("Market not found")
-    updates = payload.model_dump(exclude_unset=True)
+    updates = _sanitize_market_payload(payload, exclude_unset=True)
     if "title" in updates and updates["title"]:
         updates["slug"] = _ensure_unique_slug(db, _slugify(updates["title"]), current_market_id=market.id)
     for field, value in updates.items():
@@ -532,18 +635,18 @@ def preview_trade(db: Session, market_id: int, payload: TradeQuoteRequest, user_
     return build_trade_quote(market, payload, position=position)
 
 
-def execute_trade(db: Session, market_id: int, payload: TradeCreate) -> Trade:
+def execute_trade(db: Session, market_id: int, payload: TradeCreate, user_id: int) -> Trade:
     if payload.client_order_id:
         existing = db.scalar(
             select(Trade).where(
-                Trade.user_id == payload.user_id,
+                Trade.user_id == user_id,
                 Trade.client_order_id == payload.client_order_id,
             )
         )
         if existing:
             return existing
 
-    user = _load_user_for_update(db, payload.user_id)
+    user = _load_user_for_update(db, user_id)
     if not user:
         raise ValueError("User not found")
     market = _load_market_for_update(db, market_id)
@@ -557,33 +660,22 @@ def execute_trade(db: Session, market_id: int, payload: TradeCreate) -> Trade:
     _enforce_trade_limits(payload, quote)
 
     if payload.action == TradeAction.buy:
-        if user.balance < quote.amount_in:
-            raise ValueError("Insufficient balance")
-        user.balance = _q_money(user.balance - quote.amount_in)
-        if payload.side == TradeSide.yes:
-            position.yes_shares = _q_share(position.yes_shares + quote.shares_out)
-            position.cost_basis_yes = _q_money(position.cost_basis_yes + quote.amount_in)
-        else:
-            position.no_shares = _q_share(position.no_shares + quote.shares_out)
-            position.cost_basis_no = _q_money(position.cost_basis_no + quote.amount_in)
+        _decrement_user_balance(db, user, quote.amount_in)
+        _increment_position_for_buy(db, position, payload.side, quote.shares_out, quote.amount_in)
         ledger_type = LedgerType.trade_buy
         ledger_amount = -quote.amount_in
         cash_amount = quote.amount_in
         traded_amount = quote.amount_in
     else:
-        user.balance = _q_money(user.balance + quote.cash_out)
         if payload.side == TradeSide.yes:
             avg_cost = position.cost_basis_yes / position.yes_shares if position.yes_shares > ZERO else ZERO
             released_cost = _q_money(avg_cost * quote.shares_out)
-            position.yes_shares = _q_share(position.yes_shares - quote.shares_out)
-            position.cost_basis_yes = _q_money(position.cost_basis_yes - released_cost)
-            position.realized_pnl = _q_money(position.realized_pnl + quote.cash_out - released_cost)
         else:
             avg_cost = position.cost_basis_no / position.no_shares if position.no_shares > ZERO else ZERO
             released_cost = _q_money(avg_cost * quote.shares_out)
-            position.no_shares = _q_share(position.no_shares - quote.shares_out)
-            position.cost_basis_no = _q_money(position.cost_basis_no - released_cost)
-            position.realized_pnl = _q_money(position.realized_pnl + quote.cash_out - released_cost)
+        realized_delta = _q_money(quote.cash_out - released_cost)
+        _decrement_position_for_sell(db, position, payload.side, quote.shares_out, released_cost, realized_delta)
+        _increment_user_balance(db, user, quote.cash_out)
         ledger_type = LedgerType.trade_sell
         ledger_amount = quote.cash_out
         cash_amount = quote.cash_out

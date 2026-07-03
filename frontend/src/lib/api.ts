@@ -515,7 +515,6 @@ export const api = {
   trade: (
     marketId: number,
     payload: {
-      user_id: number;
       side: "yes" | "no";
       action: "buy" | "sell";
       amount: number;

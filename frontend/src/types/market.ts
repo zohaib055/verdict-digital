@@ -72,7 +72,6 @@ export const CATEGORIES = [
   "Policy",
   "Congress",
   "Geopolitics",
-  "politics",
 ] as const;
 
 export type Category = (typeof CATEGORIES)[number];
